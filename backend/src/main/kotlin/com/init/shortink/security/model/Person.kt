@@ -1,6 +1,7 @@
-package com.init.shortink.model
+package com.init.shortink.security.model
 
-import lombok.NonNull
+import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.BatchSize
 import javax.persistence.*
 
 @Table
@@ -18,4 +19,19 @@ class Person {
 
     @Column(unique = true)
     var login: String = ""
+
+    @Column
+    var pwd: String = ""
+
+    @Column
+    var email: String = ""
+
+    @JsonIgnore
+    @Column
+    var activated: Boolean = false
+
+    @ManyToMany
+    @JoinTable(name = "USER_AUTHORITY", joinColumns = [JoinColumn(name = "USER_ID", referencedColumnName = "id")], inverseJoinColumns = [JoinColumn(name = "AUTHORITY_NAME", referencedColumnName = "NAME")])
+    @BatchSize(size = 20)
+    var authorities: Set<Authority> = HashSet<Authority>()
 }
