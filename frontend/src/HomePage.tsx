@@ -1,9 +1,18 @@
 import React from 'react';
 import './App.css';
-import {Avatar, Card, CardContent, CardHeader, Grid, IconButton, Typography} from '@material-ui/core';
+import {
+  Avatar,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Grid,
+  IconButton,
+  Menu, MenuItem,
+  Typography
+} from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {Person} from "@material-ui/icons";
-import {Link} from "react-router-dom";
+import {MoreVertOutlined} from "@material-ui/icons";
 
 // TODO: Сокращатель ссылок:
 //  Полное управление ссылками и предпросмотр;
@@ -11,7 +20,7 @@ import {Link} from "react-router-dom";
 //  Лайф-лента ссылок;
 //  Метод шифровки для ссылок и также мульти-ссылок.
 
-const useStyles = makeStyles((theme: Theme) =>
+const styles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       margin: theme.spacing(10, 15, 0)
@@ -20,51 +29,66 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: '0 2% 0',
       justifyContent: 'center',
       display: 'flex'
+    },
+    liveCard: {
+      margin: theme.spacing(5),
+      backgroundColor: '#8e8e8e',
+      color: '#ffffff'
+    },
+    liveCardHead: {
+      textDecoration: 'none',
+      color: '#ffffff'
     }
   })
 );
 
-function getT(): any {
-  let arr = []
+
+export default function HomePage() {
+  const [ancEl, setAncEl] = React.useState<null | HTMLElement>(null)
+  const handleClick = (ev: React.MouseEvent<HTMLButtonElement>) => {
+    setAncEl(ev.currentTarget)
+  }
+  const handleClose = () => {
+    setAncEl(null)
+  }
+
+  const liveList = []
   for (let i = 0; i < 10; i++) {
-    arr.push(
-      <Grid item sm={6} spacing={4}>
-        <Card style={{margin: 5+'%', maxWidth: 100+'%'}}>
-          <Link to={'/profile/user_'+i} style={{textDecoration: 'none', color: 'purple'}}>
-            <CardHeader title={'User_'+i} subheader={'test2@ma.com'} avatar={
-              <Avatar/>
-            }/>
-          </Link>
+    liveList.push(
+      <Grid item sm={6} spacing={4} xs={12} xl={3}>
+        <Menu anchorEl={ancEl} open={Boolean(ancEl)} onClose={handleClose}>
+          <MenuItem>Keks</MenuItem>
+          <MenuItem>Keks</MenuItem>
+          <MenuItem>Keks</MenuItem>
+        </Menu>
+        <Card className={styles().liveCard} elevation={8}>
+          <CardHeader className={styles().liveCardHead} title={'User_'+i} subheader={'test2@ma.com'} subheaderTypographyProps={{color: 'inherit'}} avatar={
+            <Avatar/>
+          } action={
+            <IconButton onClick={handleClick}>
+              <MoreVertOutlined/>
+            </IconButton>
+          }/>
+          <Divider/>
           <CardContent>
             <Typography>
-              {i}
+              someText_{i}
             </Typography>
           </CardContent>
         </Card>
       </Grid>
     )
   }
-  return arr
-}
-
-function HomePage() {
-  const styles = useStyles()
   return (
     <div>
-      <Card className={styles.root}>
-        <CardContent className={styles.title}>
+      <Card className={styles().root}>
+        <CardHeader title={'Лайф-лента ссылок'} style={{textAlign: 'center'}}/>
+        <CardContent className={styles().title}>
           <Grid container>
-            <Grid item>
-              <CardHeader title={'Лайф-лента ссылок'} style={{textAlign: 'center'}}/>
-            </Grid>
-            <Grid>
-              {getT()}
-            </Grid>
+            {liveList}
           </Grid>
         </CardContent>
       </Card>
     </div>
   );
-}
-
-export default HomePage;
+};

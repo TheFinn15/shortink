@@ -9,6 +9,9 @@ import ToolbarDrawer from "./ToolbarDrawer";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    root: {
+      backgroundColor: '#373737'
+    },
     titleLogo: {
       color: 'white',
       textDecoration: 'none'
@@ -19,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) =>
 function ToolbarComp() {
     const styles = useStyles()
     return (
-        <AppBar>
+        <AppBar className={styles.root}>
           <Toolbar>
             <ToolbarDrawer/>
             <Link to="/" className={styles.titleLogo}>
