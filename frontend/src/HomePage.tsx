@@ -9,10 +9,11 @@ import {
   Grid,
   IconButton,
   Menu, MenuItem,
-  Typography
+  Typography,
+  TextField, Paper, InputBase, InputAdornment
 } from '@material-ui/core';
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {MoreVertOutlined} from "@material-ui/icons";
+import {CreateOutlined, MoreVertOutlined, SearchOutlined, TextFields, TextFieldsOutlined} from "@material-ui/icons";
 
 // TODO: Сокращатель ссылок:
 //  Полное управление ссылками и предпросмотр;
@@ -24,6 +25,10 @@ const styles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       margin: theme.spacing(10, 15, 0)
+    },
+    createField: {
+      width: 100+'%',
+      margin: theme.spacing(3, 0)
     },
     title: {
       margin: '0 2% 0',
@@ -56,13 +61,9 @@ export default function HomePage() {
   for (let i = 0; i < 10; i++) {
     liveList.push(
       <Grid item sm={6} spacing={4} xs={12} xl={3}>
-        <Menu anchorEl={ancEl} open={Boolean(ancEl)} onClose={handleClose}>
-          <MenuItem>Keks</MenuItem>
-          <MenuItem>Keks</MenuItem>
-          <MenuItem>Keks</MenuItem>
-        </Menu>
         <Card className={styles().liveCard} elevation={8}>
-          <CardHeader className={styles().liveCardHead} title={'User_'+i} subheader={'test2@ma.com'} subheaderTypographyProps={{color: 'inherit'}} avatar={
+          <CardHeader className={styles().liveCardHead} title={'User_' + i} subheader={'test2@ma.com'}
+                      subheaderTypographyProps={{color: 'inherit'}} avatar={
             <Avatar/>
           } action={
             <IconButton onClick={handleClick}>
@@ -79,14 +80,30 @@ export default function HomePage() {
       </Grid>
     )
   }
+
   return (
-    <div>
-      <Card className={styles().root}>
-        <CardHeader title={'Лайф-лента ссылок'} style={{textAlign: 'center'}}/>
+    <div className={styles().root}>
+      <TextField id="newLink" className={styles().createField} label="Ваша ссылка для сжатия" variant="outlined" InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <CreateOutlined />
+          </InputAdornment>
+        ),
+      }}/>
+      <Card>
+        <CardHeader
+          title={'Лайф-лента ссылок'}
+          style={{textAlign: 'center'}}
+        />
         <CardContent className={styles().title}>
           <Grid container>
             {liveList}
           </Grid>
+          <Menu anchorEl={ancEl} open={Boolean(ancEl)} onClose={handleClose}>
+            <MenuItem>Keks</MenuItem>
+            <MenuItem>Keks</MenuItem>
+            <MenuItem>Keks</MenuItem>
+          </Menu>
         </CardContent>
       </Card>
     </div>
