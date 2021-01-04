@@ -46,11 +46,25 @@
     </v-app-bar>
 
     <v-main>
+      <v-snackbar
+          transition="fade-transition"
+          top
+          timeout="1500"
+          v-model="chatAlert"
+      >
+        <span>Данная функция времена недоступна.</span>
+      </v-snackbar>
+      <v-dialog>
+        <template v-slot:activator>
+
+        </template>
+      </v-dialog>
+      <v-dialog></v-dialog>
       <router-view/>
     </v-main>
 
     <footer>
-      <v-bottom-navigation grow :value="bottomNav" color="#448AFF">
+      <v-bottom-navigation v-if="!isAuth" grow :value="bottomNav" color="#448AFF">
         <v-btn to="/">
           <span>
             Лайф-лента
@@ -79,14 +93,32 @@
           </v-icon>
         </v-btn>
       </v-bottom-navigation>
-      <v-snackbar
-          transition="fade-transition"
-          top
-          timeout="1500"
-          v-model="chatAlert"
-      >
-        <span>Данная функция времена недоступна.</span>
-      </v-snackbar>
+      <v-bottom-navigation grow :value="bottomNav" color="#448AFF" v-else>
+        <v-btn to="/">
+          <span>
+            Лайф-лента
+          </span>
+          <v-icon>
+            list_alt
+          </v-icon>
+        </v-btn>
+        <v-btn>
+            <span>
+              Авторизация
+            </span>
+          <v-icon>
+            person_pin
+          </v-icon>
+        </v-btn>
+        <v-btn>
+            <span>
+              Регистрация
+            </span>
+          <v-icon>
+            person_add
+          </v-icon>
+        </v-btn>
+      </v-bottom-navigation>
     </footer>
   </v-app>
 </template>
@@ -109,6 +141,11 @@ export default Vue.extend({
     createShortink: false,
     bottomNav: 0,
     chatAlert: false
-  })
+  }),
+  computed: {
+    isAuth() {
+      return localStorage['uid'] !== undefined;
+    }
+  }
 });
 </script>
