@@ -9,62 +9,88 @@
           Shortink
         </router-link>
       </v-card-title>
+      <v-progress-linear
+          :active="loaderForm"
+          :indeterminate="loaderForm"
+          absolute
+          bottom
+          color="#E3F2FD"
+      />
       <v-btn icon>
         <v-icon>
           translate
         </v-icon>
       </v-btn>
-      <v-dialog>
-        <template v-slot:activator="{on, attrs}">
-          <v-btn icon
-                 title="Создать сокращенную ссылку"
-                 v-on="on" v-bind="attrs">
-            <v-icon>
-              create
-            </v-icon>
-          </v-btn>
-        </template>
-        <v-card>
-          <v-card-title>
-            Новая ссылка
-          </v-card-title>
-        </v-card>
-      </v-dialog>
       <v-spacer/>
       <v-menu transition="fade-transition" offset-y>
         <template v-slot:activator="{on, attrs}">
-          <v-avatar color="#1E88E5" v-bind="attrs" v-on="on" title="Anonymous">
+          <v-avatar color="#1E88E5" v-bind="attrs" v-on="on" title="Anonymous" v-if="!isAuth">
             A
+          </v-avatar>
+          <v-avatar v-if="isAuth || userInfo.img === null" color="#1E88E5" v-bind="attrs" v-on="on" :title="userInfo.fname + ' ' + userInfo.lname">
+            {{userInfo.fname[0]}}
+          </v-avatar>
+          <v-avatar v-else>
+            <v-img :src="userInfo.img" />
           </v-avatar>
         </template>
         <v-card>
-          <v-card-subtitle>
+          <v-card-subtitle v-if="!isAuth">
             Не найдено
+          </v-card-subtitle>
+          <v-card-subtitle v-else>
+            {{userInfo.fname}} {{userInfo.lname}}
           </v-card-subtitle>
           <v-divider/>
           <v-list nav>
-            <v-list-item-group>
-              <v-list-item>
+            <v-list-item-group v-if="!isAuth">
+              <v-list-item @click="authForm.state = true">
                 <v-list-item-icon>
                   <v-icon>
                     person_pin
                   </v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title @click="authForm.state = true">
+                  <v-list-item-title>
                     Авторизация
                   </v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
-              <v-list-item>
+              <v-list-item @click="registerForm.state = true">
                 <v-list-item-icon>
                   <v-icon>
                     person_add
                   </v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title @click="registerForm.state = true">
+                  <v-list-item-title>
                     Регистрация
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+            <v-list-item-group v-else>
+              <v-list-item @click="doBuyPremium">
+                <v-list-item-icon>
+                  <v-icon>
+                    attach_money
+                  </v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    Оформить подписку
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="doLogout">
+                <v-list-item-icon>
+                  <v-icon>
+                    exit_to_app
+                  </v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    Выйти
                   </v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
@@ -173,9 +199,18 @@ export default Vue.extend({
   name: "App",
   components: {},
   data: () => ({
-    createShortink: false,
     bottomNav: 0,
     goToErr: false,
+    isAuth: false,
+    loaderForm: false,
+    userInfo: {
+      fname: 'l',
+      lname: 'l',
+      login: 'l',
+      email: 'l',
+      pwd: 'l',
+      img: 'l'
+    },
     authForm: {
       state: false,
       login: null,
@@ -197,7 +232,7 @@ export default Vue.extend({
   methods: {
     goToCabinet() {
       if (localStorage['uid'] !== undefined) {
-        this.$router.push('/cabinet')
+        this.$router.push('/profile/'+this.userInfo.login)
       } else {
         this.$data.goToErr = true
       }
@@ -207,20 +242,37 @@ export default Vue.extend({
         login: this.$data.authForm.login,
         pwd: this.$data.authForm.pwd
       })
-      if (localStorage['uid'] === undefined) {
-        this.$data.authForm.alertState = true
-        this.$data.authForm.alertInfo[0] = 'Ошибка при авторизации'
-        this.$data.authForm.alertInfo[1] = 'red'
-      } else {
-        this.$data.authForm.alertState = true
-        this.$data.authForm.alertInfo[0] = 'Успешнная авторизация'
-        this.$data.authForm.alertInfo[1] = 'success'
-      }
+      this.loaderForm = true
+      setTimeout(() => {
+        if (localStorage['uid'] !== undefined) {
+          this.authForm.alertState = true;
+          this.authForm.alertInfo[0] = 'Успешнная авторизация';
+          this.authForm.alertInfo[1] = 'success';
+          this.authForm.state = false
+          this.loaderForm = false
+        } else {
+          this.authForm.alertState = true;
+          this.authForm.alertInfo[0] = 'Ошибка при авторизации';
+          this.authForm.alertInfo[1] = 'red'
+          this.loaderForm = false
+        }
+      }, 2500)
+    },
+    doLogout() {
+      this.loaderForm = true
+      setTimeout(() => {
+        this.isAuth = false
+        this.loaderForm = false
+      }, 1000)
     }
   },
-  mounted() {
+  async mounted() {
+    if (localStorage['uid'] !== undefined) {
+      this.isAuth = true
+      Promise.resolve(await this.$store.getters.getCurUser).then(result => (this.userInfo = result))
+    }
     if (this.$route.path === '/') this.$data.bottomNav = 0
-    if (this.$route.path === '/cabinet') this.$data.bottomNav = 1
+    if (this.$route.path === '/profile/'+this.userInfo.login) this.$data.bottomNav = 1
     if (this.$route.path === '/chats') this.$data.bottomNav = 2
   }
 });
