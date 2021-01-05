@@ -10,20 +10,18 @@ import javax.transaction.Transactional
 
 @Service
 @Transactional
-class PersonService {
+class PersonService(
+        personRepo: PersonRepo
+) {
     @Autowired
-    var userRepo: PersonRepo? = null
+    var userRepo: PersonRepo = personRepo
 
 
-    private var userRepository: PersonRepo? = null
-
-    fun PersonService(userRepository: PersonRepo?) {
-        this.userRepository = userRepository
-    }
+    private var userRepository: PersonRepo = personRepo
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     fun getUserWithAuthorities(): Optional<Person?>? {
-        return userRepository!!::findOneWithAuthoritiesByLogin.let { SecurityUtils().getCurrentUsername().flatMap(it) }
+        return userRepository::findOneWithAuthoritiesByLogin.let { SecurityUtils().getCurrentUsername().flatMap(it) }
     }
 
     fun save(user: Person) {

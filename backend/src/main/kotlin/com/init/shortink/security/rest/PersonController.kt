@@ -3,6 +3,7 @@ package com.init.shortink.security.rest
 import com.init.shortink.security.model.Authority
 import com.init.shortink.security.model.Person
 import com.init.shortink.security.repo.PersonRepo
+import com.init.shortink.security.service.PersonService
 import io.jsonwebtoken.Jwts
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,7 +16,8 @@ import javax.ws.rs.core.Context
 @RestController
 @RequestMapping("/api")
 class PersonController(
-        private val personRepo: PersonRepo
+        private val personRepo: PersonRepo,
+        private val personService: PersonService
 ) {
 
     @GetMapping("/users/all")
@@ -24,8 +26,12 @@ class PersonController(
     }
 
     @GetMapping("/user")
-    private fun getCurrent() {
-        // get current user of token
+    private fun getCurrent(): ResponseEntity<Any> {
+        return try {
+            ResponseEntity.ok(personService.getUserWithAuthorities()!!.get())
+        } catch (e: java.lang.Exception) {
+            ResponseEntity.ok("Users not exists")
+        }
     }
 
     @GetMapping("/users/{id}")

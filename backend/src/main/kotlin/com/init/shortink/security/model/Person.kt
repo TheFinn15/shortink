@@ -26,6 +26,9 @@ class Person {
     @Column
     var email: String = ""
 
+    @Column(length = 1000000)
+    var img: String = ""
+
     @JsonIgnore
     @Column
     var activated: Boolean = false
