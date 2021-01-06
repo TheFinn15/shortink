@@ -27,10 +27,10 @@
           <v-avatar color="#1E88E5" v-bind="attrs" v-on="on" title="Anonymous" v-if="!isAuth">
             A
           </v-avatar>
-          <v-avatar v-if="isAuth || userInfo.img === null" color="#1E88E5" v-bind="attrs" v-on="on" :title="userInfo.fname + ' ' + userInfo.lname">
+          <v-avatar v-if="isAuth && userInfo.img === null" color="#1E88E5" v-bind="attrs" v-on="on" :title="userInfo.fname + ' ' + userInfo.lname">
             {{userInfo.fname[0]}}
           </v-avatar>
-          <v-avatar v-else>
+          <v-avatar v-else v-bind="attrs" v-on="on">
             <v-img :src="userInfo.img" />
           </v-avatar>
         </template>
@@ -268,8 +268,14 @@ export default Vue.extend({
   },
   async mounted() {
     if (localStorage['uid'] !== undefined) {
-      this.isAuth = true
-      Promise.resolve(await this.$store.getters.getCurUser).then(result => (this.userInfo = result))
+      // eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJUZXN0ZXIyMzQiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjA5OTYxNzY3fQ.jjJ6gJxmFoTFXH2E0zl5TU3rrQNj4o3GlZIreduaI9Vj8Mw1dAemBGAvcxyfgHeefDN9OoyECLwFxHevd8zrwg
+      if (await this.$store.getters.validateToken) {
+        this.isAuth = true
+        this.userInfo = await this.$store.getters.getCurUser
+      } else {
+        localStorage.removeItem('uid')
+        window.location.reload()
+      }
     }
     if (this.$route.path === '/') this.$data.bottomNav = 0
     if (this.$route.path === '/profile/'+this.userInfo.login) this.$data.bottomNav = 1

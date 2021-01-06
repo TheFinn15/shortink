@@ -7,47 +7,36 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     token: '',
-    ip: 'localhost',
-    port: '25016'
+    ip: 'http://localhost',
+    port: ':25016'
   },
   mutations: {
     async auth(state: any, userInfo: any) {
-      const ip = state.ip
-      const port = state.port
-      await axios({
-        method: 'POST',
-        url: `http://${ip}:${port}/api/auth`,
-        data: {
-          login: userInfo.login,
-          pwd: userInfo.pwd
-        }
+      await axios.post(state.ip+state.port+'/api/auth', {
+        login: userInfo.login,
+        pwd: userInfo.pwd
       }).then(resp => {
         state.isLogin = resp.data['id_token']
         localStorage['uid'] = resp.data['id_token']
-      }).catch(() => {
-        state.isLogin = ''
       })
-    },
-    gets: state => {
-      return state.ip
     }
   },
   actions: {},
   modules: {},
   getters: {
-    getUrl: state => {
-      return [state.ip, state.port]
-    },
     async getCurUser(state: any) {
-      const ip = state.ip
-      const port = state.port
-      return await axios({
-        method: 'GET',
-        url: `http://${ip}:${port}/api/user`,
+      return await axios.get(state.ip+state.port+'/api/user', {
         headers: {
           Authorization: 'Bearer ' + localStorage['uid']
         }
       }).then(resp => resp.data)
+    },
+    async validateToken(state: any) {
+      return await axios.get(state.ip+state.port+'/api/check-auth', {
+        headers: {
+          token: localStorage['uid']
+        }
+      }).then(resp => resp.data.status === 200)
     }
   }
 });

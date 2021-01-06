@@ -58,7 +58,7 @@ import { Component, Vue } from "vue-property-decorator";
   }),
   components: {},
   mounted() {
-    console.log('mutata', this.$store.getters.getUrl)
+    console.log('mutata')
   }
 })
 export default class Home extends Vue {}
