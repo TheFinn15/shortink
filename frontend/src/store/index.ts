@@ -6,22 +6,33 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    token: '',
     ip: 'http://localhost',
-    port: ':25016'
+    port: ':25016',
+    userInfo: {}
   },
   mutations: {
-    async auth(state: any, userInfo: any) {
+    async auth(state: any) {
       await axios.post(state.ip+state.port+'/api/auth', {
-        login: userInfo.login,
-        pwd: userInfo.pwd
+        login: state.userInfo.login,
+        pwd: state.userInfo.pwd
       }).then(resp => {
-        state.isLogin = resp.data['id_token']
         localStorage['uid'] = resp.data['id_token']
       })
     }
   },
-  actions: {},
+  actions: {
+    async register (context: any) {
+      await axios.post(context.state.ip+context.state.port+'api/register', {
+        fname: context.state.userInfo.fname,
+        lname: context.state.userInfo.lname,
+        email: context.state.userInfo.email,
+        login: context.state.userInfo.login,
+        pwd: context.state.userInfo.pwd
+      }).then(() => {
+        context.commit('auth')
+      })
+    }
+  },
   modules: {},
   getters: {
     async getCurUser(state: any) {

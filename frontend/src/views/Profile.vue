@@ -15,20 +15,20 @@
           <v-row>
             <v-col cols="3">
               <v-text-field
-                  label="Имя"
-                  v-model="info.fname"
-                  shaped
-                  outlined
-                  readonly
+                label="Имя"
+                v-model="info.fname"
+                shaped
+                outlined
+                readonly
               />
             </v-col>
             <v-col cols="3">
               <v-text-field
-                  label="Имя"
-                  v-model="info.fname"
-                  shaped
-                  outlined
-                  readonly
+                label="Имя"
+                v-model="info.fname"
+                shaped
+                outlined
+                readonly
               />
             </v-col>
           </v-row>
@@ -45,32 +45,30 @@ export default {
     return {
       isAuth: false,
       info: {
-        fname: 'l',
-        lname: 'l',
-        login: 'l',
-        email: 'l',
-        pwd: 'l',
-        img: 'l'
+        fname: "l",
+        lname: "l",
+        login: "l",
+        email: "l",
+        pwd: "l",
+        img: "l"
       }
-    }
+    };
   },
   async mounted() {
-    if (localStorage['uid'] !== undefined) {
+    if (localStorage["uid"] !== undefined) {
       if (await this.$store.getters.validateToken) {
-        this.isAuth = true
-        this.info = await this.$store.getters.getCurUser
+        this.isAuth = true;
+        this.info = await this.$store.getters.getCurUser;
       } else {
-        for(const item of Object.keys(this.info)) {
-          this.info[item] = null
+        for (const item of Object.keys(this.info)) {
+          this.info[item] = null;
         }
-        localStorage.removeItem('uid')
-        window.location.reload()
+        localStorage.removeItem("uid");
+        window.location.reload();
       }
     }
   }
-}
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
