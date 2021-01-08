@@ -8,7 +8,8 @@ export default new Vuex.Store({
   state: {
     ip: 'http://localhost',
     port: ':25016',
-    userInfo: {}
+    userInfo: {},
+    newLink: {}
   },
   mutations: {
     async auth(state: any) {
@@ -35,6 +36,21 @@ export default new Vuex.Store({
   },
   modules: {},
   getters: {
+    encryptLink(state: any, link: string) {
+      const keyWords = [
+        ['https://', ''],
+        ['http://', ''],
+        ['www', '']
+      ]
+
+    },
+    async createShortink(state: any) {
+      return await axios.post(state.ip+state.port+'/api/link', {
+        encrypt_link: state.newLink.encryptLink,
+        multiple: state.newLink.multiple,
+        private: state.newLink.private
+      })
+    },
     async getAllUsers(state: any) {
       return await axios.get(state.ip+state.port+'/api/users/all')
         .then(resp => resp.data)

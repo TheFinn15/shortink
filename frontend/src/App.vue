@@ -280,7 +280,7 @@ export default Vue.extend({
   name: "App",
   components: {},
   data: () => ({
-    bottomNav: null,
+    bottomNav: "",
     goToErr: false,
     isAuth: false,
     isDisableBtn: false,
