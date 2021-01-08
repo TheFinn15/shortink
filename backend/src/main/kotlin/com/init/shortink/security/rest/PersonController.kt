@@ -43,6 +43,15 @@ class PersonController(
         }
     }
 
+//    @GetMapping("/users/{login}")
+//    private fun getByLogin(@PathVariable login: String): ResponseEntity<Any> {
+//        try {
+//            return ResponseEntity.ok(personRepo.getByLogin(login))
+//        } catch (e: Exception) {
+//            return ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST)
+//        }
+//    }
+
     @PostMapping("/register")
     private fun createUser(@RequestBody person: Person): ResponseEntity<Any> {
         try {
@@ -74,7 +83,7 @@ class PersonController(
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/users/{id}")
     private fun editUser(@PathVariable id: Long, @RequestBody person: Person): ResponseEntity<Any> {
         try {
             val curPerson: Person = personRepo.getOne(id)
@@ -94,7 +103,7 @@ class PersonController(
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/users/{id}")
     private fun delUser(@PathVariable id: Long) {
         personRepo.delete(personRepo.getOne(id))
     }

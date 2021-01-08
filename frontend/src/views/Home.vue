@@ -1,15 +1,28 @@
 <template>
   <v-card style="margin: 5% 15% 0 15%" flat>
-    <v-text-field
-      filled
-      rounded
-      shaped
-      placeholder="Ваша ссылка для сокращения"
-      append-icon="create"
-      color="#448AFF"
-      :rules="urlRule"
-      v-model="newShortink"
-    />
+    <v-menu offset-y rounded="lg">
+      <template v-slot:activator="{ on, attrs }">
+        <v-text-field
+          v-on="on"
+          v-bind="attrs"
+          filled
+          rounded
+          shaped
+          placeholder="Ваша ссылка для сокращения"
+          append-icon="create"
+          color="#448AFF"
+          :rules="urlRule"
+          v-model="newShortink"
+          @input="createShortinkMenu = true"
+        />
+      </template>
+      <v-card>
+        <v-card-subtitle>
+          Доп. функции:
+        </v-card-subtitle>
+        <v-divider />
+      </v-card>
+    </v-menu>
     <v-card>
       <v-container>
         <v-row>
