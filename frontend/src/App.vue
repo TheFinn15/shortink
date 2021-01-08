@@ -34,7 +34,7 @@
             A
           </v-avatar>
           <v-avatar
-            v-if="isAuth && userInfo.img === null"
+            v-if="isAuth && userInfo.img === ''"
             color="#1976D2"
             v-bind="attrs"
             v-on="on"
@@ -179,7 +179,7 @@
               <v-col cols="6">
                 <v-text-field
                   label="Фамилия"
-                  v-model="registerForm.sname"
+                  v-model="registerForm.lname"
                   outlined
                 />
               </v-col>
@@ -280,7 +280,7 @@ export default Vue.extend({
   name: "App",
   components: {},
   data: () => ({
-    bottomNav: "",
+    bottomNav: null,
     goToErr: false,
     isAuth: false,
     isDisableBtn: false,
@@ -301,7 +301,7 @@ export default Vue.extend({
     registerForm: {
       state: false,
       fname: null,
-      sname: null,
+      lname: null,
       email: null,
       login: null,
       pwd: null,
@@ -315,10 +315,13 @@ export default Vue.extend({
       this.goToErr = true;
       this.isDisableBtn = true;
     },
-    doRegister() {
+    async doRegister() {
       this.$store.state.userInfo = this.registerForm;
-      this.$store.dispatch("register");
+      await this.$store.dispatch("register");
       this.loaderForm = true;
+      if (localStorage["uid"] !== undefined) {
+        this.userInfo = await this.$store.getters.getCurUser;
+      }
       setTimeout(() => {
         if (localStorage["uid"] !== undefined) {
           this.alertState = true;
@@ -334,10 +337,13 @@ export default Vue.extend({
         }
       }, 2500);
     },
-    doAuth() {
+    async doAuth() {
       this.$store.state.userInfo = this.authForm;
       this.$store.commit("auth");
       this.loaderForm = true;
+      if (localStorage["uid"] !== undefined) {
+        this.userInfo = await this.$store.getters.getCurUser;
+      }
       setTimeout(() => {
         if (localStorage["uid"] !== undefined) {
           this.alertState = true;
@@ -358,12 +364,15 @@ export default Vue.extend({
       setTimeout(() => {
         this.isAuth = false;
         this.loaderForm = false;
+        localStorage.removeItem("uid");
       }, 1000);
+    },
+    doBuyPremium() {
+      console.log("");
     }
   },
   async mounted() {
     if (localStorage["uid"] !== undefined) {
-      // eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJUZXN0ZXIyMzQiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjA5OTYxNzY3fQ.jjJ6gJxmFoTFXH2E0zl5TU3rrQNj4o3GlZIreduaI9Vj8Mw1dAemBGAvcxyfgHeefDN9OoyECLwFxHevd8zrwg
       if (await this.$store.getters.validateToken) {
         this.isAuth = true;
         this.userInfo = await this.$store.getters.getCurUser;

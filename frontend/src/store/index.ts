@@ -22,7 +22,7 @@ export default new Vuex.Store({
   },
   actions: {
     async register (context: any) {
-      await axios.post(context.state.ip+context.state.port+'api/register', {
+      await axios.post(context.state.ip+context.state.port+'/api/register', {
         fname: context.state.userInfo.fname,
         lname: context.state.userInfo.lname,
         email: context.state.userInfo.email,
@@ -35,6 +35,10 @@ export default new Vuex.Store({
   },
   modules: {},
   getters: {
+    async getAllUsers(state: any) {
+      return await axios.get(state.ip+state.port+'/api/users/all')
+        .then(resp => resp.data)
+    },
     async getCurUser(state: any) {
       return await axios.get(state.ip+state.port+'/api/user', {
         headers: {
