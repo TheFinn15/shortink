@@ -87,6 +87,22 @@
 </template>
 
 <script lang="ts">
+/*
+TODO: Шифровщик ссылок
+  Начало ссылки: 
+      если есть (https://) заменять на это ~(шифрованное тело ссылки);
+      если есть (http://) заменять на это (шифрованное тело ссылки).
+  Дальше:
+      если есть (www) или т.п. префиксы то замены на первую букву префикса:
+      есть таких букв больше одной, то будет вида [www] = [w3];
+        если есть субдомен, также берем первую букву:
+        если таких букв больше одной, то будет вида [stotr] = [st2];
+  Остальное тело ссылки:
+      Также берем несколько букв из домена и доменной зоны,
+    взяв их длины и поделив по-полам и берем рандомно столько раз
+    сколько вышло из расчета. Так делается для всего остального тела ссылки.
+    (слешы между путями не заменяются)
+*/
 import { Component, Vue } from "vue-property-decorator";
 
 @Component({
@@ -107,19 +123,16 @@ import { Component, Vue } from "vue-property-decorator";
     encryptLink: function encryptLink() {
       let res = "";
       const chars = "abcdefghijklmnopqrstuvwxyz".split("");
-      const anyChars = "01234567890-=_+/?|!@#$%^&*()".split("");
+      const anyChars = "01234567890-=_+/?|!@#$%^&*".split("");
       for (let i = 0; i < 8; i++) {
         const randNum = Math.floor(Math.random() * 2);
         if (i === 0) {
           res += "~(";
-          delete anyChars[anyChars.indexOf("~")];
-          delete anyChars[anyChars.indexOf("(")];
-          delete anyChars[anyChars.indexOf(")")];
         }
         if (randNum === 1) {
-          res += chars[Math.floor(Math.random() * chars.length)];
+          res += chars[Math.floor(Math.random() * chars.length-1)];
         } else {
-          res += anyChars[Math.floor(Math.random() * anyChars.length)];
+          res += anyChars[Math.floor(Math.random() * anyChars.length-1)];
         }
         if (i === 7) res += ")";
       }
