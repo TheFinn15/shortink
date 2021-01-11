@@ -36,13 +36,17 @@ export default new Vuex.Store({
   },
   modules: {},
   getters: {
+    async getLiveList(state: any) {
+      return await axios.get(state.ip+state.port+'/api/link/all')
+        .then(resp => resp.data)
+    },
     async createShortink(state: any) {
       return await axios.post(state.ip+state.port+'/api/link', {
         encryptLink: state.newLink.encryptLink,
         nativeLink: state.newLink.nativeLink,
         multiple: state.newLink.multiple,
         private: state.newLink.private,
-        userId: state.newLink.userId
+        user: state.newLink.user
       }).then(() => true)
         .catch(() => false)
     },

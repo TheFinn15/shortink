@@ -68,33 +68,129 @@
     <v-card>
       <v-container>
         <v-row>
-          <v-col sm="12" md="6" lg="4" xl v-for="i in 5" :key="i">
+          <v-col
+            sm="12"
+            md="6"
+            lg="4"
+            xl
+            v-for="(item, i) in liveList"
+            :key="i"
+          >
             <v-card>
               <v-toolbar flat>
                 <router-link
-                  :to="'/profile/user_' + i"
+                  v-if="item.user !== null"
+                  :to="'/profile/' + item.user.login"
                   style="color: inherit; text-decoration: none"
                 >
                   <v-toolbar-title>
                     <v-avatar color="#1E88E5">
                       <span style="color: white">
-                        {{ i }}
+                        {{ item.user.login[0] }}
                       </span>
                     </v-avatar>
-                    User_{{ i }}
+                    {{ item.user.login }}
                   </v-toolbar-title>
                 </router-link>
+                <v-toolbar-title v-else>
+                  <v-avatar color="#1E88E5">
+                    <span style="color: white">
+                      A
+                    </span>
+                  </v-avatar>
+                  Anonymous
+                </v-toolbar-title>
                 <v-spacer />
-                <v-btn icon>
-                  <v-icon>
-                    more_vert
-                  </v-icon>
-                </v-btn>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-on="on" v-bind="attrs">
+                      <v-icon>
+                        access_time
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>
+                    Дата создания: <br />
+                    {{ item.createdDate }}
+                  </span>
+                </v-tooltip>
+                <v-menu offset-y rounded="lg">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn icon v-on="on" v-bind="attrs">
+                      <v-icon>
+                        more_vert
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item-group v-if="item.user === null">
+                      <v-list-item @click="window.history.go(item.nativeLink)">
+                        <v-list-item-icon>
+                          <v-icon>
+                            call_made
+                          </v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>
+                          Перейти по ссылке
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list-item-group>
+                    <v-list-item-group v-else>
+                      <v-list-item>
+                        <v-list-item-icon>
+                          <v-icon>
+                            call_made
+                          </v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>
+                          Перейти по ссылке
+                        </v-list-item-title>
+                      </v-list-item>
+                      <v-list-item :disabled="!goToChatsEnable" to="/chats">
+                        <v-list-item-icon>
+                          <v-icon>
+                            message
+                          </v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>
+                          Перейти в чат
+                        </v-list-item-title>
+                      </v-list-item>
+                    </v-list-item-group>
+                  </v-list>
+                </v-menu>
               </v-toolbar>
               <v-divider />
-              <v-card-text>
-                dsadadadd
-              </v-card-text>
+              <v-chip-group>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <div v-on="on" v-bind="attrs" v-if="item.multiple || item.private">
+                      <v-chip
+                          class="ma-2"
+                          outlined
+                          color="#1E88E5"
+                          v-if="item.multiple"
+                      >
+                        Multiple
+                      </v-chip>
+                      <v-chip
+                          class="ma-2"
+                          outlined
+                          color="#1E88E5"
+                          v-if="item.private"
+                      >
+                        Private
+                      </v-chip>
+                    </div>
+                    <v-chip v-on="on" v-bind="attrs" class="ma-2" outlined color="red" v-else>
+                      Обычная
+                    </v-chip>
+                  </template>
+                  <span>
+                    Вид ссылки
+                  </span>
+                </v-tooltip>
+              </v-chip-group>
             </v-card>
           </v-col>
         </v-row>
@@ -105,14 +201,16 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
 
 @Component({
   data: () => ({
-    list: [],
+    liveList: [],
     createLinkDialog: false,
     alertCreateLink: false,
     alertInfo: ["success", ""],
     newShortink: "",
+    goToChatsEnable: localStorage["uid"] !== undefined,
     featuresCreate: {
       multiLink: false,
       privateLink: false
@@ -159,6 +257,9 @@ import { Component, Vue } from "vue-property-decorator";
     }
   }),
   components: {},
+  async updated() {
+    this.$data.liveList = await this.$store.getters.getLiveList;
+  },
   methods: {
     cancelCreateLink() {
       this.$data.createLinkDialog = false;
@@ -183,9 +284,9 @@ import { Component, Vue } from "vue-property-decorator";
         this.$store.state.newLink = {
           encryptLink: encryptLink,
           nativeLink: this.$data.newShortink,
-          multiple: this.$data.featuresCreate.multiLink,
-          private: this.$data.featuresCreate.privateLink,
-          userId: user !== undefined ? { id: user.id } : null
+          multiple: Boolean(this.$data.featuresCreate.multiLink),
+          private: Boolean(this.$data.featuresCreate.privateLink),
+          user: user !== undefined ? { id: user.id } : null
         };
         if (await this.$store.getters.createShortink) {
           for (let i = this.$data.newShortink.length; i > 0; i--) {
@@ -212,6 +313,12 @@ import { Component, Vue } from "vue-property-decorator";
           this.$data.newShortink = "";
           this.$data.featuresCreate.multiLink = false;
           this.$data.featuresCreate.privateLink = false;
+
+          await axios
+            .get(
+              this.$store.state.ip + this.$store.state.port + "/api/link/all"
+            )
+            .then(resp => (this.$data.liveList = resp.data));
         } else {
           this.$data.alertCreateLink = true;
           this.$data.alertInfo[0] = "red";
@@ -220,8 +327,8 @@ import { Component, Vue } from "vue-property-decorator";
       }
     }
   },
-  mounted() {
-    console.log("");
+  async mounted() {
+    this.$data.liveList = await this.$store.getters.getLiveList;
   }
 })
 export default class Home extends Vue {}
