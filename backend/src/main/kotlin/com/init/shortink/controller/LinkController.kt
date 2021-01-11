@@ -2,10 +2,11 @@ package com.init.shortink.controller
 
 import com.init.shortink.model.Link
 import com.init.shortink.repo.LinkRepo
-import org.apache.tomcat.util.http.parser.HttpParser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @CrossOrigin
 @RestController
@@ -26,10 +27,14 @@ class LinkController(
                 throw Exception("Empty fields")
             }
 
+            val dateTime = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH:mm:ss")
+            link.createdDate = dateTime.format(formatter)
             linkRepo.save(link)
 
             return ResponseEntity.ok(linkRepo.getByEncryptLink(encLink = link.encryptLink))
         } catch (e: Exception) {
+            println(e.message)
             return ResponseEntity("Обязательные поля пустые в теле объекта", HttpStatus.BAD_REQUEST)
         }
     }

@@ -39,9 +39,12 @@ export default new Vuex.Store({
     async createShortink(state: any) {
       return await axios.post(state.ip+state.port+'/api/link', {
         encryptLink: state.newLink.encryptLink,
+        nativeLink: state.newLink.nativeLink,
         multiple: state.newLink.multiple,
-        private: state.newLink.private
-      })
+        private: state.newLink.private,
+        userId: state.newLink.userId
+      }).then(() => true)
+        .catch(() => false)
     },
     async getAllUsers(state: any) {
       return await axios.get(state.ip+state.port+'/api/users/all')

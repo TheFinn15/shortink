@@ -1,7 +1,24 @@
 <template>
   <v-card style="margin: 5% 15% 0 15%" flat>
-    <v-snackbar v-model="multiLinkDialog">
-      dsadadsada
+    <v-snackbar top color="#1976D2" shaped v-model="createLinkDialog">
+      Вы уверены ?
+      <template v-slot:action>
+        <v-btn text @click="cancelCreateLink">
+          Отменить
+        </v-btn>
+        <v-btn text @click="createShortink">
+          Готово
+        </v-btn>
+      </template>
+    </v-snackbar>
+    <v-snackbar
+      timeout="1500"
+      top
+      :color="alertInfo[1]"
+      shaped
+      v-model="alertCreateLink"
+    >
+      {{ alertInfo[1] }}
     </v-snackbar>
     <v-text-field
       filled
@@ -12,7 +29,7 @@
       append-icon="create"
       :rules="urlRule"
       v-model="newShortink"
-      @keydown.enter="createShortink"
+      @keydown.enter="createLinkDialog = true"
     />
     <v-card
       v-if="newShortink.length > 0"
@@ -92,7 +109,9 @@ import { Component, Vue } from "vue-property-decorator";
 @Component({
   data: () => ({
     list: [],
-    multiLinkDialog: false,
+    createLinkDialog: false,
+    alertCreateLink: false,
+    alertInfo: ["success", ""],
     newShortink: "",
     featuresCreate: {
       multiLink: false,
@@ -141,36 +160,63 @@ import { Component, Vue } from "vue-property-decorator";
   }),
   components: {},
   methods: {
+    cancelCreateLink() {
+      this.$data.createLinkDialog = false;
+      this.$data.newShortink = "";
+      this.$data.featuresCreate.multiLink = false;
+      this.$data.featuresCreate.privateLink = false;
+    },
     async createShortink() {
       if (
         this.$data.newShortink.match("^https:\\/\\/|^http:\\/\\/") !== null &&
         this.$data.newShortink.length > 8
       ) {
-        this.$store.state.newLink.link = this.$data.newShortink;
+        this.$data.createLinkDialog = false;
+        let user;
+        if (localStorage["uid"] !== undefined) {
+          user = await this.$store.getters.getCurUser;
+        }
         const encryptLink =
           "https://shortink.com/" +
           this.$data.encryptLink(this.$data.newShortink);
 
-        for (let i = this.$data.newShortink.length; i > 0; i--) {
-          setTimeout(() => {
-            this.$data.newShortink = this.$data.newShortink.replace(
-              this.$data.newShortink[i],
-              ""
-            );
-          }, 600);
-          setTimeout(() => {
-            if (i <= 1) {
-              this.$data.newShortink = "";
-              for (let i = 0; i < encryptLink.length; i++) {
-                setTimeout(() => {
-                  this.$data.newShortink += encryptLink[i];
-                }, 600);
+        this.$store.state.newLink = {
+          encryptLink: encryptLink,
+          nativeLink: this.$data.newShortink,
+          multiple: this.$data.featuresCreate.multiLink,
+          private: this.$data.featuresCreate.privateLink,
+          userId: user !== undefined ? { id: user.id } : null
+        };
+        if (await this.$store.getters.createShortink) {
+          for (let i = this.$data.newShortink.length; i > 0; i--) {
+            setTimeout(() => {
+              this.$data.newShortink = this.$data.newShortink.replace(
+                this.$data.newShortink[i],
+                ""
+              );
+            }, 600);
+            setTimeout(() => {
+              if (i <= 1) {
+                this.$data.newShortink = "";
+                for (let i = 0; i < encryptLink.length; i++) {
+                  setTimeout(() => {
+                    this.$data.newShortink += encryptLink[i];
+                  }, 600);
+                }
               }
-            }
-          }, 650);
+            }, 650);
+          }
+
+          this.$data.alertCreateLink = true;
+          this.$data.alertInfo[1] = "Шортер был успешно создан";
+          this.$data.newShortink = "";
+          this.$data.featuresCreate.multiLink = false;
+          this.$data.featuresCreate.privateLink = false;
+        } else {
+          this.$data.alertCreateLink = true;
+          this.$data.alertInfo[0] = "red";
+          this.$data.alertInfo[1] = "Ошибка при создание шортера";
         }
-
-
       }
     }
   },

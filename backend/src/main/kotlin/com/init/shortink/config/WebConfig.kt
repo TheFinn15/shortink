@@ -80,6 +80,7 @@ class WebConfig(
                 .antMatchers("/api/register").permitAll()
                 .antMatchers("/api/check-auth").permitAll()
                 .antMatchers("/api/users/all").permitAll()
+                .antMatchers("/api/link").permitAll()
                 .antMatchers("/api/persons").hasAuthority("ROLE_USER")
                 .antMatchers("/api/hiddenmessage").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated()

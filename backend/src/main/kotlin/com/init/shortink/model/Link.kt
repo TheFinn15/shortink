@@ -1,5 +1,7 @@
 package com.init.shortink.model
 
+import com.init.shortink.security.model.Person
+import org.springframework.format.annotation.DateTimeFormat
 import javax.persistence.*
 
 @Table
@@ -7,17 +9,24 @@ import javax.persistence.*
 class Link {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int = 0
+    var id: Int = 0
 
     @Column
-    val encryptLink: String = ""
+    var encryptLink: String = ""
 
     @Column
-    val nativeLink: String = ""
+    var nativeLink: String = ""
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    var user: Person? = null
 
     @Column
-    val multiple: Boolean = false
+    var multiple: Boolean = false
 
     @Column
-    val private: Boolean = false
+    var private: Boolean = false
+
+    @Column
+    var createdDate: String = ""
 }
