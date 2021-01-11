@@ -8,11 +8,11 @@
       rounded
       shaped
       placeholder="Ваша ссылка для сокращения"
-      append-icon="create"
       color="#448AFF"
+      append-icon="create"
       :rules="urlRule"
       v-model="newShortink"
-      @input="createShortink"
+      @keydown.enter="createShortink"
     />
     <v-card
       v-if="newShortink.length > 0"
@@ -100,9 +100,8 @@ import { Component, Vue } from "vue-property-decorator";
     },
     urlRule: [
       (v: any) =>
-        v.match("^https:\\/\\/") !== null || "Введите корректную ссылку",
-      (v: any) =>
-        v.match("^http:\\/\\/") !== null || "Введите корректную ссылку"
+        v.match("^https:\\/\\/|^http:\\/\\/") !== null ||
+        "Введите корректную ссылку"
     ],
     encryptLink: function encryptLink(link: string): string {
       let res = "";
@@ -144,12 +143,34 @@ import { Component, Vue } from "vue-property-decorator";
   methods: {
     async createShortink() {
       if (
-        this.$data.newShortink.match("^https:\\/\\/") !== null &&
+        this.$data.newShortink.match("^https:\\/\\/|^http:\\/\\/") !== null &&
         this.$data.newShortink.length > 8
       ) {
         this.$store.state.newLink.link = this.$data.newShortink;
-        console.log(this.$data.encryptLink(this.$data.newShortink));
-        // console.log(await this.$store.getters.encryptLink);
+        const encryptLink =
+          "https://shortink.com/" +
+          this.$data.encryptLink(this.$data.newShortink);
+
+        for (let i = this.$data.newShortink.length; i > 0; i--) {
+          setTimeout(() => {
+            this.$data.newShortink = this.$data.newShortink.replace(
+              this.$data.newShortink[i],
+              ""
+            );
+          }, 600);
+          setTimeout(() => {
+            if (i <= 1) {
+              this.$data.newShortink = "";
+              for (let i = 0; i < encryptLink.length; i++) {
+                setTimeout(() => {
+                  this.$data.newShortink += encryptLink[i];
+                }, 600);
+              }
+            }
+          }, 650);
+        }
+
+
       }
     }
   },
