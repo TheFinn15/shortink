@@ -87,22 +87,6 @@
 </template>
 
 <script lang="ts">
-/*
-TODO: Шифровщик ссылок
-  Начало ссылки: 
-      если есть (https://) заменять на это ~(шифрованное тело ссылки);
-      если есть (http://) заменять на это (шифрованное тело ссылки).
-  Дальше:
-      если есть (www) или т.п. префиксы то замены на первую букву префикса:
-      есть таких букв больше одной, то будет вида [www] = [w3];
-        если есть субдомен, также берем первую букву:
-        если таких букв больше одной, то будет вида [stotr] = [st2];
-  Остальное тело ссылки:
-      Также берем несколько букв из домена и доменной зоны,
-    взяв их длины и поделив по-полам и берем рандомно столько раз
-    сколько вышло из расчета. Так делается для всего остального тела ссылки.
-    (слешы между путями не заменяются)
-*/
 import { Component, Vue } from "vue-property-decorator";
 
 @Component({
@@ -120,23 +104,40 @@ import { Component, Vue } from "vue-property-decorator";
       (v: any) =>
         v.match("^http:\\/\\/") !== null || "Введите корректную ссылку"
     ],
-    encryptLink: function encryptLink() {
+    encryptLink: function encryptLink(link: string): string {
       let res = "";
-      const chars = "abcdefghijklmnopqrstuvwxyz".split("");
-      const anyChars = "01234567890-=_+/?|!@#$%^&*".split("");
-      for (let i = 0; i < 8; i++) {
-        const randNum = Math.floor(Math.random() * 2);
-        if (i === 0) {
-          res += "~(";
+
+      const protocolPart = new RegExp(link.slice(0, link.indexOf("//")), "i");
+      const bodyPart = link.split("/")[2].split(".");
+      const pathPart = link.split("/").slice(3);
+
+      if (protocolPart.test("https://")) res += "~(";
+      else if (protocolPart.test("http://")) res += "(";
+
+      for (const item of bodyPart) {
+        if (item.length < 2) res += item;
+        else {
+          for (let i = 0; i < item.length; i += 2) {
+            res += item[i];
+          }
         }
-        if (randNum === 1) {
-          res += chars[Math.floor(Math.random() * chars.length-1)];
-        } else {
-          res += anyChars[Math.floor(Math.random() * anyChars.length-1)];
-        }
-        if (i === 7) res += ")";
       }
-      return "/shortink/" + res;
+
+      const tempArr = [];
+      for (let j = 0; j < pathPart.length; j++) {
+        const item = pathPart[j];
+        tempArr.push("/");
+        if (item.length < 2) res += item;
+        else {
+          for (let i = 0; i < item.length; i += 2) {
+            tempArr[j] += item[i];
+          }
+        }
+      }
+      res += tempArr.join("");
+      res += ")";
+
+      return res;
     }
   }),
   components: {},
@@ -147,7 +148,7 @@ import { Component, Vue } from "vue-property-decorator";
         this.$data.newShortink.length > 8
       ) {
         this.$store.state.newLink.link = this.$data.newShortink;
-        console.log(this.$data.encryptLink());
+        console.log(this.$data.encryptLink(this.$data.newShortink));
         // console.log(await this.$store.getters.encryptLink);
       }
     }
