@@ -13,6 +13,9 @@ class Link {
     val encryptLink: String = ""
 
     @Column
+    val nativeLink: String = ""
+
+    @Column
     val multiple: Boolean = false
 
     @Column

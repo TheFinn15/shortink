@@ -22,7 +22,7 @@ class LinkController(
     @PostMapping("/link")
     private fun createLink(@RequestBody link: Link) : ResponseEntity<Any> {
         try {
-            if (link.encryptLink == null) {
+            if (link.encryptLink == null || link.nativeLink == null) {
                 throw Exception("Empty fields")
             }
 

@@ -12,7 +12,7 @@
       color="#448AFF"
       :rules="urlRule"
       v-model="newShortink"
-      @submit="createShortink"
+      @input="createShortink"
     />
     <v-card
       v-if="newShortink.length > 0"
@@ -99,18 +99,48 @@ import { Component, Vue } from "vue-property-decorator";
       privateLink: false
     },
     urlRule: [
-      (v: any): any =>
-        v.match("^https:\\/\\/") !== null || "Введите корректную ссылку"
-    ]
+      (v: any) =>
+        v.match("^https:\\/\\/") !== null || "Введите корректную ссылку",
+      (v: any) =>
+        v.match("^http:\\/\\/") !== null || "Введите корректную ссылку"
+    ],
+    encryptLink: function encryptLink() {
+      let res = "";
+      const chars = "abcdefghijklmnopqrstuvwxyz".split("");
+      const anyChars = "01234567890-=_+/?|!@#$%^&*()".split("");
+      for (let i = 0; i < 8; i++) {
+        const randNum = Math.floor(Math.random() * 2);
+        if (i === 0) {
+          res += "~(";
+          delete anyChars[anyChars.indexOf("~")];
+          delete anyChars[anyChars.indexOf("(")];
+          delete anyChars[anyChars.indexOf(")")];
+        }
+        if (randNum === 1) {
+          res += chars[Math.floor(Math.random() * chars.length)];
+        } else {
+          res += anyChars[Math.floor(Math.random() * anyChars.length)];
+        }
+        if (i === 7) res += ")";
+      }
+      return "/shortink/" + res;
+    }
   }),
   components: {},
   methods: {
     async createShortink() {
-      this.$store.getters
+      if (
+        this.$data.newShortink.match("^https:\\/\\/") !== null &&
+        this.$data.newShortink.length > 8
+      ) {
+        this.$store.state.newLink.link = this.$data.newShortink;
+        console.log(this.$data.encryptLink());
+        // console.log(await this.$store.getters.encryptLink);
+      }
     }
   },
   mounted() {
-    console.log("mutata");
+    console.log("");
   }
 })
 export default class Home extends Vue {}
