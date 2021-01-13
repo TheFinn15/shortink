@@ -8,8 +8,8 @@ import javax.persistence.*
 @Entity
 class Person {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private val id: Int = 0
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    val id: Int = 0
 
     @Column
     var fName: String = ""
