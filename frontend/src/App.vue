@@ -34,7 +34,7 @@
             A
           </v-avatar>
           <v-avatar
-            v-if="isAuth && userInfo.img === ''"
+            v-else-if="userInfo.img === '' || userInfo.img === null"
             color="#1976D2"
             v-bind="attrs"
             v-on="on"
@@ -267,12 +267,11 @@
 </template>
 
 <script lang="ts">
-// TODO: Сокращатель ссылок:
 // TODO: Полное управление ссылками и предпросмотр;
 // TODO: Мульти ссылки(скрещивание ссылок в одну, с возможностью перехода на каждую из них;
-// TODO: Лайф-лента ссылок;
-// TODO: Метод шифровки для ссылок и также мульти-ссылок.
-// TODO: Просмотр профилей других юзеров
+// TODO: Лайф-лента ссылок ( 50% готово );
+// TODO: Метод шифровки для ссылок и также мульти-ссылок ( 50% готово ).
+// TODO: Просмотр профилей других юзеров ( 50% готово )
 // TODO: ЧАТ ПОЛЬЗОВАТЕЛЕЙ (не точно)
 import Vue from "vue";
 
@@ -317,10 +316,15 @@ export default Vue.extend({
     },
     async doRegister() {
       this.$store.state.userInfo = this.registerForm;
-      await this.$store.dispatch("register");
+      const register = await this.$store.getters.register;
       this.loaderForm = true;
-      if (localStorage["uid"] !== undefined) {
-        this.userInfo = await this.$store.getters.getCurUser;
+      if (register.state) {
+        const auth = await this.$store.getters.auth;
+        if (auth.state) {
+          localStorage["uid"] = auth.token;
+          this.userInfo = await this.$store.getters.getCurUser;
+          await this.$store.commit("changeStatusOnline", { state: true });
+        }
       }
       setTimeout(() => {
         if (localStorage["uid"] !== undefined) {
@@ -329,6 +333,7 @@ export default Vue.extend({
           this.alertInfo[1] = "success";
           this.registerForm.state = false;
           this.loaderForm = false;
+          window.location.reload();
         } else {
           this.alertState = true;
           this.alertInfo[0] = "Ошибка при регистрации";
@@ -339,10 +344,12 @@ export default Vue.extend({
     },
     async doAuth() {
       this.$store.state.userInfo = this.authForm;
-      this.$store.commit("auth");
+      const auth = await this.$store.getters.auth;
       this.loaderForm = true;
-      if (localStorage["uid"] !== undefined) {
+      if (auth.state) {
+        localStorage["uid"] = auth.token;
         this.userInfo = await this.$store.getters.getCurUser;
+        await this.$store.commit("changeStatusOnline", { state: true });
       }
       setTimeout(() => {
         if (localStorage["uid"] !== undefined) {
@@ -351,6 +358,7 @@ export default Vue.extend({
           this.alertInfo[1] = "success";
           this.authForm.state = false;
           this.loaderForm = false;
+          window.location.reload();
         } else {
           this.alertState = true;
           this.alertInfo[0] = "Ошибка при авторизации";
@@ -359,12 +367,17 @@ export default Vue.extend({
         }
       }, 2500);
     },
-    doLogout() {
+    async doLogout() {
       this.loaderForm = true;
+      await this.$store.commit("changeStatusOnline", { state: false });
+      for (const item in this.userInfo) {
+        this.$data.userInfo[item] = "";
+      }
       setTimeout(() => {
         this.isAuth = false;
         this.loaderForm = false;
         localStorage.removeItem("uid");
+        window.location.reload();
       }, 1000);
     },
     doBuyPremium() {

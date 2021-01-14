@@ -12,30 +12,40 @@ export default new Vuex.Store({
     newLink: {}
   },
   mutations: {
-    async auth(state: any) {
-      await axios.post(state.ip+state.port+'/api/auth', {
-        login: state.userInfo.login,
-        pwd: state.userInfo.pwd
+    async changeStatusOnline(state: any, payload: any) {
+      await axios.get(state.ip+state.port+'/api/user', {
+        headers: {
+          Authorization: 'Bearer ' + localStorage['uid']
+        }
       }).then(resp => {
-        localStorage['uid'] = resp.data['id_token']
+        axios.put(state.ip+state.port+'/api/users/'+resp.data.id, {
+          isOnline: payload.state
+        }, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage['uid']
+          }
+        })
       })
     }
   },
-  actions: {
-    async register (context: any) {
+  actions: {},
+  modules: {},
+  getters: {
+    async register(context: any) {
       await axios.post(context.state.ip+context.state.port+'/api/register', {
         fname: context.state.userInfo.fname,
         lname: context.state.userInfo.lname,
         email: context.state.userInfo.email,
         login: context.state.userInfo.login,
         pwd: context.state.userInfo.pwd
-      }).then(() => {
-        context.commit('auth')
-      })
-    }
-  },
-  modules: {},
-  getters: {
+      }).then(resp => ({state: true, info: resp.data}))
+    },
+    async auth(state: any) {
+      return await axios.post(state.ip+state.port+'/api/auth', {
+        login: state.userInfo.login,
+        pwd: state.userInfo.pwd
+      }).then(resp => ({state: true, token: resp.data['id_token']}))
+    },
     async getLiveList(state: any) {
       return await axios.get(state.ip+state.port+'/api/link/all')
         .then(resp => resp.data)

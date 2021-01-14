@@ -9,7 +9,7 @@ import javax.persistence.*
 class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: Int = 0
+    val id: Long = 0L
 
     @Column
     var fName: String = ""
@@ -28,6 +28,9 @@ class Person {
 
     @Column(length = 1000000)
     var img: String = ""
+
+    @Column
+    var isOnline: Boolean = false
 
     @JsonIgnore
     @Column

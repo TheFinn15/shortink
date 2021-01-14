@@ -1,7 +1,7 @@
 <template>
   <v-card style="margin: 5% 15% 0 15%" flat>
     <v-snackbar top color="#1976D2" shaped v-model="createLinkDialog">
-      Вы уверены ?
+      Ссылка верная ?
       <template v-slot:action>
         <v-btn text @click="cancelCreateLink">
           Отменить
@@ -72,7 +72,7 @@
             sm="12"
             md="6"
             lg="4"
-            xl
+            xl="4"
             v-for="(item, i) in liveList"
             :key="i"
           >
@@ -84,11 +84,19 @@
                   style="color: inherit; text-decoration: none"
                 >
                   <v-toolbar-title>
-                    <v-avatar color="#1E88E5">
-                      <span style="color: white">
-                        {{ item.user.login[0] }}
-                      </span>
-                    </v-avatar>
+                    <v-badge
+                      dot
+                      :color="item.user.isOnline ? 'success' : 'red'"
+                      overlap
+                      offset-y="10"
+                      :title="item.user.isOnline ? 'Онлайн' : 'Не в сети'"
+                    >
+                      <v-avatar color="#1E88E5">
+                        <span style="color: white">
+                          {{ item.user.login[0] }}
+                        </span>
+                      </v-avatar>
+                    </v-badge>
                     {{ item.user.login }}
                   </v-toolbar-title>
                 </router-link>
@@ -164,25 +172,36 @@
               <v-chip-group>
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <div v-on="on" v-bind="attrs" v-if="item.multiple || item.private">
+                    <div
+                      v-on="on"
+                      v-bind="attrs"
+                      v-if="item.multiple || item.private"
+                    >
                       <v-chip
-                          class="ma-2"
-                          outlined
-                          color="#1E88E5"
-                          v-if="item.multiple"
+                        class="ma-2"
+                        outlined
+                        color="#1E88E5"
+                        v-if="item.multiple"
                       >
                         Multiple
                       </v-chip>
                       <v-chip
-                          class="ma-2"
-                          outlined
-                          color="#1E88E5"
-                          v-if="item.private"
+                        class="ma-2"
+                        outlined
+                        color="#1E88E5"
+                        v-if="item.private"
                       >
                         Private
                       </v-chip>
                     </div>
-                    <v-chip v-on="on" v-bind="attrs" class="ma-2" outlined color="red" v-else>
+                    <v-chip
+                      v-on="on"
+                      v-bind="attrs"
+                      class="ma-2"
+                      outlined
+                      color="red"
+                      v-else
+                    >
                       Обычная
                     </v-chip>
                   </template>

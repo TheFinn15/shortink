@@ -96,9 +96,11 @@ class PersonController(
             } else if (person.email !== null) {
                 curPerson.email = person.email
             }
+            personRepo.setIsOnline(person.isOnline, id)
             personRepo.save(curPerson)
             return ResponseEntity.ok(personRepo.getByLogin(curPerson.login))
         } catch (e: Exception) {
+            println(e.message)
             return ResponseEntity("Bad Request", HttpStatus.BAD_REQUEST)
         }
     }

@@ -26,14 +26,14 @@ import java.util.logging.Logger;
 class AuthController(
         private var authenticationManagerBuilder: AuthenticationManagerBuilder?,
         private var tokenProvider: TokenProvider?,
-        private var jwtFilter: JWTFilter
+        private var jwtFilter: JWTFilter,
+        private var personRepo: PersonRepo
 ) {
 
     @PostMapping("/auth")
     fun authorize(@Valid @RequestBody loginDto: LoginDTO): ResponseEntity<JWTToken> {
         val authenticationToken: UsernamePasswordAuthenticationToken =
                 UsernamePasswordAuthenticationToken(loginDto.login, loginDto.pwd)
-        println("login: " + loginDto.login.toString() + " pass: " + loginDto.pwd)
         val authentication = authenticationManagerBuilder!!.getObject().authenticate(authenticationToken)
         SecurityContextHolder.getContext().authentication = authentication
         val rememberMe = loginDto.rememberMe ?: false
