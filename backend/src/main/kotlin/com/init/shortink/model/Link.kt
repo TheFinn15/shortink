@@ -9,7 +9,7 @@ import javax.persistence.*
 class Link {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Int = 0
+    var id: Long = 0
 
     @Column
     var encryptLink: String = ""

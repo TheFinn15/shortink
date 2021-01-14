@@ -14,7 +14,7 @@
     <v-snackbar
       timeout="1500"
       top
-      :color="alertInfo[1]"
+      :color="alertInfo[0]"
       shaped
       v-model="alertCreateLink"
     >
@@ -131,20 +131,8 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item-group v-if="item.user === null">
-                      <v-list-item @click="window.history.go(item.nativeLink)">
-                        <v-list-item-icon>
-                          <v-icon>
-                            call_made
-                          </v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>
-                          Перейти по ссылке
-                        </v-list-item-title>
-                      </v-list-item>
-                    </v-list-item-group>
-                    <v-list-item-group v-else>
-                      <v-list-item>
+                    <v-list-item-group>
+                      <v-list-item @click="goToNativeLink(item.nativeLink)">
                         <v-list-item-icon>
                           <v-icon>
                             call_made
@@ -225,6 +213,7 @@ import axios from "axios";
 @Component({
   data: () => ({
     liveList: [],
+    reRenderPage: false,
     createLinkDialog: false,
     alertCreateLink: false,
     alertInfo: ["success", ""],
@@ -277,9 +266,15 @@ import axios from "axios";
   }),
   components: {},
   async updated() {
-    this.$data.liveList = await this.$store.getters.getLiveList;
+    if (this.$data.reRenderPage) {
+
+    }
+    // this.$data.liveList = await this.$store.getters.getLiveList;
   },
   methods: {
+    goToNativeLink(link: string) {
+      window.location.href = link;
+    },
     cancelCreateLink() {
       this.$data.createLinkDialog = false;
       this.$data.newShortink = "";
@@ -307,7 +302,8 @@ import axios from "axios";
           private: Boolean(this.$data.featuresCreate.privateLink),
           user: user !== undefined ? { id: user.id } : null
         };
-        if (await this.$store.getters.createShortink) {
+        const createdLink = await this.$store.getters.createShortink;
+        if (createdLink) {
           for (let i = this.$data.newShortink.length; i > 0; i--) {
             setTimeout(() => {
               this.$data.newShortink = this.$data.newShortink.replace(
@@ -338,6 +334,11 @@ import axios from "axios";
               this.$store.state.ip + this.$store.state.port + "/api/link/all"
             )
             .then(resp => (this.$data.liveList = resp.data));
+        }
+        else if (createdLink.status === "404") {
+          this.$data.alertCreateLink = true;
+          this.$data.alertInfo[0] = "red";
+          this.$data.alertInfo[1] = "Данный шортер уже существует у вас";
         } else {
           this.$data.alertCreateLink = true;
           this.$data.alertInfo[0] = "red";

@@ -27,15 +27,25 @@ class LinkController(
                 throw Exception("Empty fields")
             }
 
+            val checkExists: Long = linkRepo.checkUnique(link.encryptLink, link.user!!.id).toArray().size.toLong()
+
+            if (checkExists > 0L) {
+                throw Exception("Duplicates find!")
+            }
+
             val dateTime = LocalDateTime.now()
             val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH:mm:ss")
             link.createdDate = dateTime.format(formatter)
             linkRepo.save(link)
 
-            return ResponseEntity.ok(linkRepo.getByEncryptLink(encLink = link.encryptLink))
+            // linkRepo.getByEncryptLink(encLink = link.encryptLink)
+            return ResponseEntity.ok("Created new shortink")
         } catch (e: Exception) {
-            println(e.message)
-            return ResponseEntity("Обязательные поля пустые в теле объекта", HttpStatus.BAD_REQUEST)
+            val info: HashMap<String, String> = HashMap()
+            info["status"] = "404"
+            info["msg"] = "${e.message}"
+
+            return ResponseEntity(info, HttpStatus.BAD_REQUEST)
         }
     }
 
