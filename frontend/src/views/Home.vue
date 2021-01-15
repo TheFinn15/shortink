@@ -29,6 +29,7 @@
       append-icon="create"
       :rules="urlRule"
       v-model="newShortink"
+      @input="duplicateShortinkExist"
       @keydown.enter="createLinkDialog = true"
     />
     <v-card
@@ -49,6 +50,7 @@
               label="Мульти ссылка"
               value="multi-link"
               color="#EF5350"
+              :disabled="!isAuth"
               hint="Несколько ссылок в ссылке. Через пробел писать"
               persistent-hint
             >
@@ -60,6 +62,7 @@
               label="Скрытая ссылка"
               value="private-link"
               color="#E53935"
+              :disabled="!isAuth"
             />
           </v-col>
         </v-row>
@@ -213,6 +216,8 @@ import axios from "axios";
 @Component({
   data: () => ({
     liveList: [],
+    isAuth: localStorage["uid"] !== undefined,
+    shortinkIsExist: false,
     reRenderPage: false,
     createLinkDialog: false,
     alertCreateLink: false,
@@ -228,7 +233,7 @@ import axios from "axios";
         v.match("^https:\\/\\/|^http:\\/\\/") !== null ||
         "Введите корректную ссылку"
     ],
-    encryptLink: function encryptLink(link: string): string {
+    encryptLink: function(link: string): string {
       let res = "";
 
       const protocolPart = new RegExp(link.slice(0, link.indexOf("//")), "i");
@@ -267,7 +272,7 @@ import axios from "axios";
   components: {},
   async updated() {
     if (this.$data.reRenderPage) {
-
+      console.log("update");
     }
     // this.$data.liveList = await this.$store.getters.getLiveList;
   },
@@ -281,10 +286,37 @@ import axios from "axios";
       this.$data.featuresCreate.multiLink = false;
       this.$data.featuresCreate.privateLink = false;
     },
+    duplicateShortinkExist() {
+      const link = this.$data.liveList.filter(
+        (i: any) => i.nativeLink === this.$data.newShortink && i.user === null
+      );
+      if (link.length > 0) {
+        this.$data.shortinkIsExist = true;
+        for (let i = this.$data.newShortink.length; i > 0; i--) {
+          setTimeout(() => {
+            this.$data.newShortink = this.$data.newShortink.replace(
+              this.$data.newShortink[i],
+              ""
+            );
+          }, 600);
+          setTimeout(() => {
+            if (i <= 1) {
+              this.$data.newShortink = "";
+              for (let i = 0; i < link[0].encryptLink.length; i++) {
+                setTimeout(() => {
+                  this.$data.newShortink += link[0].encryptLink[i];
+                }, 600);
+              }
+            }
+          }, 650);
+        }
+      }
+    },
     async createShortink() {
       if (
         this.$data.newShortink.match("^https:\\/\\/|^http:\\/\\/") !== null &&
-        this.$data.newShortink.length > 8
+        this.$data.newShortink.length > 8 &&
+        !this.$data.shortinkIsExist
       ) {
         this.$data.createLinkDialog = false;
         let user;
@@ -303,7 +335,7 @@ import axios from "axios";
           user: user !== undefined ? { id: user.id } : null
         };
         const createdLink = await this.$store.getters.createShortink;
-        if (createdLink) {
+        if (createdLink["native_link"] !== undefined) {
           for (let i = this.$data.newShortink.length; i > 0; i--) {
             setTimeout(() => {
               this.$data.newShortink = this.$data.newShortink.replace(
@@ -334,8 +366,7 @@ import axios from "axios";
               this.$store.state.ip + this.$store.state.port + "/api/link/all"
             )
             .then(resp => (this.$data.liveList = resp.data));
-        }
-        else if (createdLink.status === "404") {
+        } else if (createdLink["status"] !== undefined) {
           this.$data.alertCreateLink = true;
           this.$data.alertInfo[0] = "red";
           this.$data.alertInfo[1] = "Данный шортер уже существует у вас";
