@@ -322,7 +322,7 @@ export default Vue.extend({
         const auth = await this.$store.getters.auth;
         if (auth.state) {
           localStorage["uid"] = auth.token;
-          this.userInfo = await this.$store.getters.getCurUser;
+          this.userInfo = await this.$store.dispatch("getCurUser");
           await this.$store.commit("changeStatusOnline", { state: true });
         }
       }
@@ -348,7 +348,7 @@ export default Vue.extend({
       this.loaderForm = true;
       if (auth.state) {
         localStorage["uid"] = auth.token;
-        this.userInfo = await this.$store.getters.getCurUser;
+        this.userInfo = await this.$store.dispatch("getCurUser");
         await this.$store.commit("changeStatusOnline", { state: true });
       }
       setTimeout(() => {
@@ -388,7 +388,7 @@ export default Vue.extend({
     if (localStorage["uid"] !== undefined) {
       if (await this.$store.getters.validateToken) {
         this.isAuth = true;
-        this.userInfo = await this.$store.getters.getCurUser;
+        this.userInfo = await this.$store.dispatch("getCurUser");
       } else {
         localStorage.removeItem("uid");
         window.location.reload();

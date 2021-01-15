@@ -189,7 +189,7 @@
                           Перейти по ссылке
                         </v-list-item-title>
                       </v-list-item>
-                      <v-list-item :disabled="!goToChatsEnable" to="/chats">
+                      <v-list-item :disabled="!goToChatsEnable(item)" to="/chats">
                         <v-list-item-icon>
                           <v-icon>
                             message
@@ -269,7 +269,9 @@ import axios from "axios";
     alertCreateLink: false,
     alertInfo: ["success", ""],
     newShortink: "",
-    goToChatsEnable: localStorage["uid"] !== undefined,
+    goToChatsEnable: (info: any): boolean => {
+      return localStorage["uid"] !== undefined && info.user !== null;
+    },
     featuresCreate: {
       multiLink: false,
       privateLink: false
@@ -379,7 +381,7 @@ import axios from "axios";
       }
     },
     goToNativeLink(link: string) {
-      window.location.href = link;
+      window.open(link, "_blank");
     },
     cancelCreateLink() {
       this.$data.createLinkDialog = false;
@@ -423,7 +425,7 @@ import axios from "axios";
         this.$data.createLinkDialog = false;
         let user;
         if (localStorage["uid"] !== undefined) {
-          user = await this.$store.getters.getCurUser;
+          user = await this.$store.dispatch("getCurUser");
         }
         const encryptLink =
           "https://shortink.com/" +

@@ -33,6 +33,13 @@ export default new Vuex.Store({
       return await axios.get(state.ip+state.port+'/api/link/all')
         .then(resp => resp.data)
     },
+    async getCurUser({commit, state}) {
+      return await axios.get(state.ip+state.port+'/api/user', {
+        headers: {
+          Authorization: 'Bearer ' + localStorage['uid']
+        }
+      }).then(resp => resp.data)
+    }
   },
   modules: {},
   getters: {
@@ -63,13 +70,6 @@ export default new Vuex.Store({
     async getAllUsers(state: any) {
       return await axios.get(state.ip+state.port+'/api/users/all')
         .then(resp => resp.data)
-    },
-    async getCurUser(state: any) {
-      return await axios.get(state.ip+state.port+'/api/user', {
-        headers: {
-          Authorization: 'Bearer ' + localStorage['uid']
-        }
-      }).then(resp => resp.data)
     },
     async validateToken(state: any) {
       return await axios.get(state.ip+state.port+'/api/check-auth', {
