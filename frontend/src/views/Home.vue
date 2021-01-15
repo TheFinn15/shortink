@@ -70,6 +70,50 @@
     </v-card>
     <v-card>
       <v-container>
+        <v-menu offset-y :close-on-content-click="false">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-on="on" v-bind="attrs" large>
+              <v-icon>
+                sort
+              </v-icon>
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-subtitle>
+              Сортировать по:
+            </v-card-subtitle>
+            <v-container>
+              <v-radio-group v-model="sortMenu" @change="doSortLiveList">
+                <v-radio value="date" label="Датам" />
+                <v-radio value="sort_alpha" label="Имени A-Z" />
+                <v-radio value="sort_ralpha" label="Имени Z-A" />
+              </v-radio-group>
+            </v-container>
+          </v-card>
+        </v-menu>
+        <v-menu offset-y :close-on-content-click="false">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-on="on" v-bind="attrs" large>
+              <v-icon>
+                filter_list
+              </v-icon>
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-subtitle>
+              Фильтрация по:
+            </v-card-subtitle>
+            <v-container>
+              <v-select
+                label="Виду ссылки:"
+                v-model="filterMenu"
+                @change="doFilterLiveList"
+                :items="['Все', 'Мульти', 'Приватная']"
+                shaped
+              />
+            </v-container>
+          </v-card>
+        </v-menu>
         <v-row>
           <v-col
             sm="12"
@@ -79,7 +123,7 @@
             v-for="(item, i) in liveList"
             :key="i"
           >
-            <v-card>
+            <v-card elevation="4">
               <v-toolbar flat>
                 <router-link
                   v-if="item.user !== null"
@@ -174,7 +218,7 @@
                         color="#1E88E5"
                         v-if="item.multiple"
                       >
-                        Multiple
+                        Мульти
                       </v-chip>
                       <v-chip
                         class="ma-2"
@@ -182,7 +226,7 @@
                         color="#1E88E5"
                         v-if="item.private"
                       >
-                        Private
+                        Приватная
                       </v-chip>
                     </div>
                     <v-chip
@@ -216,6 +260,8 @@ import axios from "axios";
 @Component({
   data: () => ({
     liveList: [],
+    filterMenu: "",
+    sortMenu: "",
     isAuth: localStorage["uid"] !== undefined,
     shortinkIsExist: false,
     reRenderPage: false,
@@ -271,12 +317,67 @@ import axios from "axios";
   }),
   components: {},
   async updated() {
+    // console.log("old", this.$data.liveList);
     if (this.$data.reRenderPage) {
-      console.log("update");
+      this.$data.liveList = await this.$store.dispatch("getLiveList");
+
+      this.$data.reRenderPage = false;
     }
-    // this.$data.liveList = await this.$store.getters.getLiveList;
+    // console.log("new", this.$data.liveList);
   },
   methods: {
+    async doFilterLiveList() {
+      if (this.$data.filterMenu === "Все") {
+        this.$data.liveList = await this.$store.dispatch("getLiveList");
+      } else if (this.$data.filterMenu === "Мульти") {
+        this.$data.liveList = this.$data.liveList.filter(
+          (i: any) => i.multiple === true
+        );
+      } else if (this.$data.filterMenu === "Приватная") {
+        this.$data.liveList = this.$data.liveList.filter(
+          (i: any) => i.private === true
+        );
+      }
+    },
+    doSortLiveList() {
+      if (this.$data.sortMenu === "date") {
+        this.$data.liveList = this.$data.liveList.sort((a: any, b: any) => {
+          if (a.createdDate > b.createdDate) {
+            return -1;
+          }
+          if (a.createdDate < b.createdDate) {
+            return 1;
+          }
+          return 0;
+        });
+      } else if (this.$data.sortMenu === "sort_alpha") {
+        this.$data.liveList = this.$data.liveList.sort((a: any, b: any) => {
+          const userName1 = a["user"] !== null ? a["user"].login : "Anonymous";
+          const userName2 = b["user"] !== null ? b["user"].login : "Anonymous";
+
+          if (userName1 < userName2) {
+            return -1;
+          }
+          if (userName1 > userName2) {
+            return 1;
+          }
+          return 0;
+        });
+      } else if (this.$data.sortMenu === "sort_ralpha") {
+        this.$data.liveList = this.$data.liveList.sort((a: any, b: any) => {
+          const userName1 = a["user"] !== null ? a["user"].login : "Anonymous";
+          const userName2 = b["user"] !== null ? b["user"].login : "Anonymous";
+
+          if (userName1 > userName2) {
+            return -1;
+          }
+          if (userName1 < userName2) {
+            return 1;
+          }
+          return 0;
+        });
+      }
+    },
     goToNativeLink(link: string) {
       window.location.href = link;
     },
@@ -292,6 +393,7 @@ import axios from "axios";
       );
       if (link.length > 0) {
         this.$data.shortinkIsExist = true;
+        this.$data.reRenderPage = true;
         for (let i = this.$data.newShortink.length; i > 0; i--) {
           setTimeout(() => {
             this.$data.newShortink = this.$data.newShortink.replace(
@@ -334,8 +436,9 @@ import axios from "axios";
           private: Boolean(this.$data.featuresCreate.privateLink),
           user: user !== undefined ? { id: user.id } : null
         };
+
         const createdLink = await this.$store.getters.createShortink;
-        if (createdLink["native_link"] !== undefined) {
+        if ("nativeLink" in createdLink) {
           for (let i = this.$data.newShortink.length; i > 0; i--) {
             setTimeout(() => {
               this.$data.newShortink = this.$data.newShortink.replace(
@@ -361,12 +464,9 @@ import axios from "axios";
           this.$data.featuresCreate.multiLink = false;
           this.$data.featuresCreate.privateLink = false;
 
-          await axios
-            .get(
-              this.$store.state.ip + this.$store.state.port + "/api/link/all"
-            )
-            .then(resp => (this.$data.liveList = resp.data));
-        } else if (createdLink["status"] !== undefined) {
+          this.$data.reRenderPage = true;
+
+        } else if ("status" in createdLink) {
           this.$data.alertCreateLink = true;
           this.$data.alertInfo[0] = "red";
           this.$data.alertInfo[1] = "Данный шортер уже существует у вас";
@@ -379,7 +479,7 @@ import axios from "axios";
     }
   },
   async mounted() {
-    this.$data.liveList = await this.$store.getters.getLiveList;
+    this.$data.liveList = await this.$store.dispatch("getLiveList");
   }
 })
 export default class Home extends Vue {}

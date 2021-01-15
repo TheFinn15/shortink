@@ -28,7 +28,12 @@ export default new Vuex.Store({
       })
     }
   },
-  actions: {},
+  actions: {
+    async getLiveList({commit, state}) {
+      return await axios.get(state.ip+state.port+'/api/link/all')
+        .then(resp => resp.data)
+    },
+  },
   modules: {},
   getters: {
     async register(context: any) {
@@ -46,10 +51,6 @@ export default new Vuex.Store({
         pwd: state.userInfo.pwd
       }).then(resp => ({state: true, token: resp.data['id_token']}))
     },
-    async getLiveList(state: any) {
-      return await axios.get(state.ip+state.port+'/api/link/all')
-        .then(resp => resp.data)
-    },
     async createShortink(state: any) {
       return await axios.post(state.ip+state.port+'/api/link', {
         encryptLink: state.newLink.encryptLink,
@@ -57,8 +58,7 @@ export default new Vuex.Store({
         multiple: state.newLink.multiple,
         private: state.newLink.private,
         user: state.newLink.user
-      }).then(() => true)
-        .catch(() => false)
+      }).then((resp: any) => resp.data)
     },
     async getAllUsers(state: any) {
       return await axios.get(state.ip+state.port+'/api/users/all')

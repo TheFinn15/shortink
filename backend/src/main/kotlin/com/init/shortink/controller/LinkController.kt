@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @CrossOrigin
 @RestController
@@ -27,10 +28,11 @@ class LinkController(
                 throw Exception("Empty fields")
             }
 
-            val checkExists: Long = linkRepo.checkUnique(link.encryptLink, link.user!!.id).toArray().size.toLong()
-
-            if (checkExists > 0L) {
-                throw Exception("Duplicates find!")
+            if (link.user !== null) {
+                val checkExists: Long = linkRepo.checkUnique(link.encryptLink, link.user!!.id).toArray().size.toLong()
+                if (checkExists > 0L) {
+                    throw Exception("Duplicates find!")
+                }
             }
 
             val dateTime = LocalDateTime.now()
@@ -39,13 +41,14 @@ class LinkController(
             linkRepo.save(link)
 
             // linkRepo.getByEncryptLink(encLink = link.encryptLink)
-            return ResponseEntity.ok("Created new shortink")
+            println(linkRepo.getByEncryptLink(link.encryptLink))
+            return ResponseEntity.ok(linkRepo.getByEncryptLink(link.encryptLink))
         } catch (e: Exception) {
             val info: HashMap<String, String> = HashMap()
             info["status"] = "404"
             info["msg"] = "${e.message}"
 
-            return ResponseEntity(info, HttpStatus.BAD_REQUEST)
+            return ResponseEntity(info, HttpStatus.NOT_FOUND)
         }
     }
 
