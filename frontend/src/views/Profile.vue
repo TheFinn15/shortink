@@ -11,15 +11,34 @@
         Настройки
       </v-tab>
       <v-tab-item>
-        <v-card shaped style="margin: 5%">
+        <v-snackbar
+          top
+          v-model="alertState"
+          shaped
+          :color="alertInfo[0]"
+          timeout="1500"
+        >
+          <template v-slot:action="{ on }">
+            <v-btn text v-on="on" @click="alertState = false">
+              <span>
+                Закрыть
+              </span>
+            </v-btn>
+          </template>
+          <span>
+            {{ alertInfo[1] }}
+          </span>
+        </v-snackbar>
+        <v-card style="margin: 5%" rounded>
           <v-card-title style="justify-content: center; display: flex">
             <v-hover v-slot="{ hover }" v-if="isAuth">
               <v-btn
                 color="success"
-                left
                 absolute
+                left
                 outlined
                 rounded
+                large
                 :disabled="!profileHaveChanges"
                 @click="applyChanges"
               >
@@ -98,24 +117,41 @@
                 <v-card max-width="250" flat>
                   <v-img :src="info.img" width="250" height="250" />
                   <v-file-input
-                    append-outer-icon="mdi-camera"
+                    append-icon="mdi-camera"
                     prepend-icon=""
                     v-if="isAuth"
-                    @input="checkChanges"
+                    @change="renderImg"
+                    @click:clear="returnOldImg"
                   />
                 </v-card>
               </v-col>
               <v-spacer />
             </v-row>
           </v-container>
+          <v-btn
+            color="red"
+            left
+            bottom
+            outlined
+            fab
+            @click="undoChanges"
+            v-if="profileHaveChanges"
+            style="margin: 2%"
+            title="Вернуть по-умолчанию"
+          >
+            <v-icon>
+              undo
+            </v-icon>
+          </v-btn>
         </v-card>
       </v-tab-item>
       <v-tab-item>
-        <v-card shaped style="margin: 2% 5%">
+        <v-card rounded style="margin: 2% 5%">
           <v-card-title style="justify-content: center; display: flex">
             Мои активные ссылки
           </v-card-title>
           <v-divider />
+
         </v-card>
       </v-tab-item>
       <v-tab-item>
@@ -141,6 +177,8 @@ export default {
       isAuth: false,
       profileHaveChanges: false,
       isInvalidLogin: false,
+      alertInfo: ["success", ""],
+      alertState: false,
       info: {
         fname: null,
         lname: null,
@@ -152,8 +190,41 @@ export default {
     };
   },
   methods: {
+    async undoChanges() {
+      for (const item of Object.keys(this.$data.info)) {
+        this.$data.info[item] = (await this.$store.dispatch("getCurUser"))[
+          item
+        ];
+      }
+      this.$data.profileHaveChanges = false;
+    },
+    async returnOldImg() {
+      this.$data.profileHaveChanges = false;
+      this.$data.info.img = (await this.$store.dispatch("getCurUser"))["img"];
+    },
+    renderImg(ev) {
+      if (!this.$data.profileHaveChanges) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          this.info.img = e.target.result;
+        };
+        reader.readAsDataURL(ev);
+        this.$data.profileHaveChanges = true;
+      }
+    },
     async applyChanges() {
-      console.log("");
+      const changeData = await this.$store.dispatch(
+        "editProfileData",
+        this.$data.info
+      );
+      if (changeData) {
+        this.alertState = true;
+        this.alertInfo[1] = "Данные были изменены";
+      } else {
+        this.alertState = true;
+        this.alertInfo[0] = "red";
+        this.alertInfo[1] = "Ошибка сервера. Попробуйте позже";
+      }
     },
     async checkChanges() {
       const userInfo = await this.$store.dispatch("getCurUser");

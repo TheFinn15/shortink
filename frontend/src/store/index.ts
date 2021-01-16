@@ -29,6 +29,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async editProfileData({state}, payload: any) {
+      return await axios.put(state.ip+state.port+'/api/users/'+payload.id, payload, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage['uid']
+        }
+      }).then(() => true)
+        .catch(() => false)
+    },
     async getLiveList({commit, state}) {
       return await axios.get(state.ip+state.port+'/api/link/all')
         .then(resp => resp.data)
@@ -44,7 +52,7 @@ export default new Vuex.Store({
   modules: {},
   getters: {
     async register(context: any) {
-      await axios.post(context.state.ip+context.state.port+'/api/register', {
+      return await axios.post(context.state.ip+context.state.port+'/api/register', {
         fname: context.state.userInfo.fname,
         lname: context.state.userInfo.lname,
         email: context.state.userInfo.email,
