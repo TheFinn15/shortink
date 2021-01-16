@@ -148,10 +148,23 @@
       <v-tab-item>
         <v-card rounded style="margin: 2% 5%">
           <v-card-title style="justify-content: center; display: flex">
+            <v-btn
+              fab
+              outlined
+              color="#448AFF"
+              absolute
+              left
+              title="Обновить ссылки"
+              @click="doUpdateMyLinks"
+            >
+              <v-icon>
+                refresh
+              </v-icon>
+            </v-btn>
             Мои активные ссылки
           </v-card-title>
           <v-divider />
-
+          <MyLinksList :links="myLinks" />
         </v-card>
       </v-tab-item>
       <v-tab-item>
@@ -170,8 +183,11 @@
 </template>
 
 <script>
+import MyLinksList from "@/components/MyLinksList";
+
 export default {
   name: "Profile",
+  components: { MyLinksList },
   data: () => {
     return {
       isAuth: false,
@@ -179,6 +195,7 @@ export default {
       isInvalidLogin: false,
       alertInfo: ["success", ""],
       alertState: false,
+      myLinks: [],
       info: {
         fname: null,
         lname: null,
@@ -190,6 +207,15 @@ export default {
     };
   },
   methods: {
+    async doUpdateMyLinks() {
+      for (let i = 0; i < this.$data.myLinks.length; i++) {
+        console.log(this.$data.myLinks[i]);
+        this.$data.myLinks[i].previewImg = await this.$store.dispatch(
+          "updateImg",
+          this.$data.myLinks[i]
+        );
+      }
+    },
     async getUserByLogin() {
       const users = await this.$store.getters.getAllUsers;
       const curProfile = this.$route.fullPath.split("/");
@@ -268,9 +294,13 @@ export default {
           atob(localStorage["uid"].split(".")[1])
         );
         const path = this.$route.path.split("/");
-        if (decodedToken["sub"] === path[path.length-1]) {
+        if (decodedToken["sub"] === path[path.length - 1]) {
           this.isAuth = true;
           this.info = await this.$store.dispatch("getCurUser");
+          const links = await this.$store.dispatch("getLiveList");
+          this.myLinks = links
+            .filter(i => i.user !== null)
+            .filter(i => i.user.login === decodedToken["sub"]);
         } else {
           await this.getUserByLogin();
         }

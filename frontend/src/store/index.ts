@@ -29,6 +29,13 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async updateImg({state}, payload: any) {
+      return await axios.put(state.ip+state.port+`/api/link/${payload.id}/update-img`, payload, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage['uid']
+        }
+      }).then(resp => resp.data)
+    },
     async auth({state}, payload: any) {
       return await axios.post(state.ip+state.port+'/api/auth', {
         login: payload.login,

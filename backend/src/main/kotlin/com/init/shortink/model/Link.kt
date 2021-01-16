@@ -29,4 +29,7 @@ class Link {
 
     @Column
     var createdDate: String = ""
+
+    @Column(length = 1000000)
+    var previewImg: String = ""
 }

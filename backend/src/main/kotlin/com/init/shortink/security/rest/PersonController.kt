@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs.core.Context
 
-@CrossOrigin
+@CrossOrigin()
 @RestController
 @RequestMapping("/api")
 class PersonController(

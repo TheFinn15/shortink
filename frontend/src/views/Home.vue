@@ -119,7 +119,7 @@
             sm="12"
             md="6"
             lg="4"
-            xl="4"
+            xl="2"
             v-for="(item, i) in liveList"
             :key="i"
           >
