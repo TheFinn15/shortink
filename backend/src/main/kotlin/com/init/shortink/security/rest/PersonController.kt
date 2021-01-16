@@ -87,13 +87,17 @@ class PersonController(
     private fun editUser(@PathVariable id: Long, @RequestBody person: Person): ResponseEntity<Any> {
         try {
             val curPerson: Person = personRepo.getOne(id)
-            if (person.fName !== null) {
+
+            if (person.fName.isNotEmpty()) {
                 curPerson.fName = person.fName
-            } else if (person.lName !== null) {
+            }
+            if (person.lName.isNotEmpty()) {
                 curPerson.lName = person.lName
-            } else if (person.login !== null) {
+            }
+            if (person.login.isNotEmpty()) {
                 curPerson.login = person.login
-            } else if (person.email !== null) {
+            }
+            if (person.email.isNotEmpty()) {
                 curPerson.email = person.email
             }
             personRepo.setIsOnline(person.isOnline, id)

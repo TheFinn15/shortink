@@ -279,7 +279,7 @@ export default Vue.extend({
   name: "App",
   components: {},
   data: () => ({
-    bottomNav: "",
+    bottomNav: "live-list",
     goToErr: false,
     isAuth: false,
     isDisableBtn: false,
@@ -343,29 +343,30 @@ export default Vue.extend({
       }, 2500);
     },
     async doAuth() {
-      this.$store.state.userInfo = this.authForm;
-      const auth = await this.$store.getters.auth;
+      const auth = await this.$store.dispatch("auth", this.authForm);
       this.loaderForm = true;
+      console.log(auth);
       if (auth.state) {
         localStorage["uid"] = auth.token;
         this.userInfo = await this.$store.dispatch("getCurUser");
         await this.$store.commit("changeStatusOnline", { state: true });
-      }
-      setTimeout(() => {
-        if (localStorage["uid"] !== undefined) {
+
+        setTimeout(() => {
           this.alertState = true;
           this.alertInfo[0] = "Успешнная авторизация";
           this.alertInfo[1] = "success";
           this.authForm.state = false;
           this.loaderForm = false;
           window.location.reload();
-        } else {
+        }, 1800);
+      } else {
+        setTimeout(() => {
           this.alertState = true;
           this.alertInfo[0] = "Ошибка при авторизации";
           this.alertInfo[1] = "red";
           this.loaderForm = false;
-        }
-      }, 2500);
+        }, 1800);
+      }
     },
     async doLogout() {
       this.loaderForm = true;
@@ -395,7 +396,7 @@ export default Vue.extend({
       }
     }
     if (this.$route.path === "/") this.bottomNav = "live-list";
-    if (this.$route.path === "/profile/" + this.userInfo.login)
+    if (this.$route.path.split("/")[1] === "profile")
       this.bottomNav = "cabinet";
     if (this.$route.path === "/chats") this.bottomNav = "chats";
   }

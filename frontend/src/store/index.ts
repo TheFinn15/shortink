@@ -29,8 +29,22 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async auth({state}, payload: any) {
+      return await axios.post(state.ip+state.port+'/api/auth', {
+        login: payload.login,
+        pwd: payload.pwd
+      }).then(resp => ({state: true, token: resp.data['id_token']}))
+        .catch(() => ({state: false}))
+    },
     async editProfileData({state}, payload: any) {
-      return await axios.put(state.ip+state.port+'/api/users/'+payload.id, payload, {
+      console.log(payload);
+      return await axios.put(state.ip+state.port+'/api/users/'+payload.id, {
+        fname: payload.fname,
+        lname: payload.lname,
+        login: payload.login,
+        email: payload.email,
+        img: payload.img
+      }, {
         headers: {
           Authorization: 'Bearer ' + localStorage['uid']
         }
@@ -59,12 +73,6 @@ export default new Vuex.Store({
         login: context.state.userInfo.login,
         pwd: context.state.userInfo.pwd
       }).then(resp => ({state: true, info: resp.data}))
-    },
-    async auth(state: any) {
-      return await axios.post(state.ip+state.port+'/api/auth', {
-        login: state.userInfo.login,
-        pwd: state.userInfo.pwd
-      }).then(resp => ({state: true, token: resp.data['id_token']}))
     },
     async createShortink(state: any) {
       return await axios.post(state.ip+state.port+'/api/link', {

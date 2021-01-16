@@ -190,6 +190,19 @@ export default {
     };
   },
   methods: {
+    async getUserByLogin() {
+      const users = await this.$store.getters.getAllUsers;
+      const curProfile = this.$route.fullPath.split("/");
+      const res = users.filter(
+        i => i.login === curProfile[curProfile.length - 1]
+      );
+      console.log(res);
+      if (res.length > 0) {
+        this.info = res[0];
+      } else {
+        this.isInvalidLogin = true;
+      }
+    },
     async undoChanges() {
       for (const item of Object.keys(this.$data.info)) {
         this.$data.info[item] = (await this.$store.dispatch("getCurUser"))[
@@ -220,6 +233,7 @@ export default {
       if (changeData) {
         this.alertState = true;
         this.alertInfo[1] = "Данные были изменены";
+        this.profileHaveChanges = false;
       } else {
         this.alertState = true;
         this.alertInfo[0] = "red";
@@ -250,8 +264,16 @@ export default {
   async mounted() {
     if (localStorage["uid"] !== undefined) {
       if (await this.$store.getters.validateToken) {
-        this.isAuth = true;
-        this.info = await this.$store.dispatch("getCurUser");
+        const decodedToken = JSON.parse(
+          atob(localStorage["uid"].split(".")[1])
+        );
+        const path = this.$route.path.split("/");
+        if (decodedToken["sub"] === path[path.length-1]) {
+          this.isAuth = true;
+          this.info = await this.$store.dispatch("getCurUser");
+        } else {
+          await this.getUserByLogin();
+        }
       } else {
         for (const item of Object.keys(this.info)) {
           this.info[item] = null;
@@ -260,16 +282,7 @@ export default {
         window.location.reload();
       }
     } else {
-      const users = await this.$store.getters.getAllUsers;
-      const curProfile = this.$route.fullPath.split("/");
-      const res = users.filter(
-        i => i.login === curProfile[curProfile.length - 1]
-      );
-      if (res.length > 0) {
-        this.info = res[0];
-      } else {
-        this.isInvalidLogin = true;
-      }
+      await this.getUserByLogin();
     }
   }
 };

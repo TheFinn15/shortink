@@ -40,4 +40,5 @@ class Person {
     @JoinTable(name = "USER_AUTHORITY", joinColumns = [JoinColumn(name = "USER_ID", referencedColumnName = "id")], inverseJoinColumns = [JoinColumn(name = "AUTHORITY_NAME", referencedColumnName = "NAME")])
     @BatchSize(size = 20)
     var authorities: Set<Authority> = HashSet<Authority>()
+
 }
